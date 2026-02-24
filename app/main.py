@@ -6,6 +6,7 @@ from .database import Base, engine, SessionLocal
 from .models import movie  # noqa: F401 - ensure models are imported for metadata
 from .models import movie_list  # noqa: F401 - ensure lists models are imported
 from .routes import movies as movies_router
+from .routes import lists as lists_router
 from sqlalchemy import text
 
 
@@ -51,8 +52,17 @@ app = FastAPI(
             "name": "movies",
             "description": """
             Movie operations. Search, filter, and discover movies.
-            
+
             **No movie IDs required** - all endpoints use title, genre, or rating.
+            """,
+        },
+        {
+            "name": "lists",
+            "description": """
+            Curated movie lists (playlists) built from existing movies.
+
+            Endpoints are explicitly labelled as **CREATE**, **READ**, **UPDATE**, and **DELETE**
+            to make CRUD operations clear during your COMP3011 demo.
             """,
         },
     ],
@@ -85,5 +95,5 @@ def read_root() -> dict[str, str | int]:
 
 
 app.include_router(movies_router.router)
-
+app.include_router(lists_router.router)
 
