@@ -50,20 +50,109 @@ def test_create_movie() -> None:
     assert "id" in data
 
 
-def test_get_movie() -> None:
+def test_get_movies_by_title() -> None:
     # create movie first
     payload = {
         "title": "The Matrix",
         "status": "released",
     }
-    create_resp = client.post("/movies", json=payload)
-    movie_id = create_resp.json()["id"]
+    client.post("/movies", json=payload)
 
-    get_resp = client.get(f"/movies/{movie_id}")
-    assert get_resp.status_code == 200
-    data = get_resp.json()
-    assert data["id"] == movie_id
-    assert data["title"] == "The Matrix"
+    # Test partial match
+    resp = client.get("/movies/by-title/Matrix")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert any(m["title"] == "The Matrix" for m in data)
+
+    # Test exact match
+    resp_exact = client.get("/movies/by-title/The Matrix", params={"exact": True})
+    assert resp_exact.status_code == 200
+    data_exact = resp_exact.json()
+    assert isinstance(data_exact, list)
+    assert any(m["title"] == "The Matrix" for m in data_exact)
+
+    # Test not found
+    resp_not_found = client.get("/movies/by-title/NonexistentMovie12345")
+    assert resp_not_found.status_code == 404
+
+
+def test_get_movies_by_genre() -> None:
+    # create movies with genres
+    client.post(
+        "/movies",
+        json={
+            "title": "Action Movie",
+            "status": "released",
+            "genres": "Action, Thriller",
+        },
+    )
+    client.post(
+        "/movies",
+        json={
+            "title": "Drama Movie",
+            "status": "released",
+            "genres": "Drama, Romance",
+        },
+    )
+
+    resp = client.get("/movies/by-genre/Action")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert "total" in data
+    assert len(data["items"]) > 0
+    assert any("Action" in m.get("genres", "") for m in data["items"])
+
+
+def test_get_movies_by_rating() -> None:
+    # create movies with different ratings
+    client.post(
+        "/movies",
+        json={
+            "title": "High Rated Movie",
+            "status": "released",
+            "vote_average": 9.0,
+        },
+    )
+    client.post(
+        "/movies",
+        json={
+            "title": "Medium Rated Movie",
+            "status": "released",
+            "vote_average": 7.0,
+        },
+    )
+    client.post(
+        "/movies",
+        json={
+            "title": "Low Rated Movie",
+            "status": "released",
+            "vote_average": 5.0,
+        },
+    )
+
+    # Test min rating
+    resp = client.get("/movies/by-rating", params={"min_rating": 7.0})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "items" in data
+    assert len(data["items"]) > 0
+    assert all(m["vote_average"] >= 7.0 for m in data["items"] if m.get("vote_average"))
+
+    # Test rating range
+    resp_range = client.get("/movies/by-rating", params={"min_rating": 6.0, "max_rating": 8.0})
+    assert resp_range.status_code == 200
+    data_range = resp_range.json()
+    assert "items" in data_range
+    for m in data_range["items"]:
+        if m.get("vote_average"):
+            assert 6.0 <= m["vote_average"] <= 8.0
+
+    # Test error when no params
+    resp_error = client.get("/movies/by-rating")
+    assert resp_error.status_code == 422
 
 
 def test_list_movies_pagination() -> None:
@@ -71,7 +160,12 @@ def test_list_movies_pagination() -> None:
     for i in range(3):
         client.post(
             "/movies",
-            json={"title": f"Movie {i}", "status": "released", "vote_average": 7.0 + i},
+            json={
+                "title": f"Movie {i}",
+                "status": "released",
+                "vote_average": 7.0 + i,
+                "genres": f"Genre{i}, Action",
+            },
         )
 
     resp = client.get("/movies", params={"skip": 0, "limit": 2})
@@ -81,5 +175,11 @@ def test_list_movies_pagination() -> None:
     assert "total" in data
     assert data["limit"] == 2
     assert len(data["items"]) <= 2
+
+    # Test genre filter
+    resp_genre = client.get("/movies", params={"genre": "Action"})
+    assert resp_genre.status_code == 200
+    data_genre = resp_genre.json()
+    assert "items" in data_genre
 
 

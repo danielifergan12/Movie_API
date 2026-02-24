@@ -1,11 +1,39 @@
 from __future__ import annotations
 
 from datetime import date
+from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, validator
 
 from ..core.config import MOVIE_STATUS_VALUES
+
+
+class GenreFilter(str, Enum):
+    """Canonical genre values used for filtering in the API.
+
+    This drives the dropdown menu in the interactive docs (Swagger UI).
+    """
+
+    ACTION = "Action"
+    ADVENTURE = "Adventure"
+    ANIMATION = "Animation"
+    COMEDY = "Comedy"
+    CRIME = "Crime"
+    DOCUMENTARY = "Documentary"
+    DRAMA = "Drama"
+    FAMILY = "Family"
+    FANTASY = "Fantasy"
+    HISTORY = "History"
+    HORROR = "Horror"
+    MUSIC = "Music"
+    MYSTERY = "Mystery"
+    ROMANCE = "Romance"
+    SCIENCE_FICTION = "Science Fiction"
+    TV_MOVIE = "TV Movie"
+    THRILLER = "Thriller"
+    WAR = "War"
+    WESTERN = "Western"
 
 
 class MovieBase(BaseModel):
@@ -94,8 +122,7 @@ class MovieUpdate(BaseModel):
 class MovieRead(MovieBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MovieListResponse(BaseModel):
@@ -104,4 +131,19 @@ class MovieListResponse(BaseModel):
     skip: int
     limit: int
 
+
+class SimilarMovie(BaseModel):
+    id: int
+    title: str
+    shared_genres: List[str]
+    shared_keywords: List[str]
+    similarity_score: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SimilarMoviesResponse(BaseModel):
+    movie_id: int
+    reference_title: str
+    items: List[SimilarMovie]
 

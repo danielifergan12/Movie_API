@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..models.movie import Movie
@@ -68,13 +69,14 @@ def import_csv(csv_path: str, db_url: str) -> None:
 
     session: Session = SessionLocal()
     inserted = 0
+    batch_size = 1000
     try:
         with open(csv_path, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                movie = Movie(
+                values = dict(
                     id=parse_int(row.get("id")),
-                    title=row.get("title") or "",
+                    title=(row.get("title") or "").strip(),
                     vote_average=parse_float(row.get("vote_average")),
                     vote_count=parse_int(row.get("vote_count")),
                     status=normalise_status(row.get("status")),
@@ -97,8 +99,14 @@ def import_csv(csv_path: str, db_url: str) -> None:
                     spoken_languages=row.get("spoken_languages") or None,
                     keywords=row.get("keywords") or None,
                 )
-                session.merge(movie)
+
+                stmt = insert(Movie).values(**values).prefix_with("OR REPLACE")
+                session.execute(stmt)
                 inserted += 1
+
+                if inserted % batch_size == 0:
+                    session.commit()
+
             session.commit()
         print(f"Imported {inserted} movies from {csv_path}")
     finally:
