@@ -17,21 +17,41 @@ This is a data-driven RESTful API for a movies dataset, built with **FastAPI**, 
 
 ## Setup (macOS / Linux)
 
-Copy and paste these commands in your terminal:
+Each step below is **individually copy‑and‑pasteable**.
+
+**1. Clone the repository**
 
 ```bash
-# 1. Clone and enter the repository
 git clone https://github.com/danielifergan12/Movie_API.git
+```
+
+**2. Enter the project folder**
+
+```bash
 cd Movie_API
+```
 
-# 2. Create and activate virtual environment
+**3. Create a virtual environment**
+
+```bash
 python3 -m venv .venv
+```
+
+**4. Activate the virtual environment**
+
+```bash
 source .venv/bin/activate
+```
 
-# 3. Install dependencies
+**5. Install dependencies**
+
+```bash
 pip install -r requirements.txt
+```
 
-# 4. Create database tables
+**6. Create the database tables**
+
+```bash
 python - << 'PY'
 from app.database import Base, engine
 from app.models import movie  # register Movie model
@@ -39,11 +59,17 @@ from app.models import movie_list  # register MovieList models
 Base.metadata.create_all(bind=engine)
 print("✓ Database tables created successfully")
 PY
+```
 
-# 5. Import movie data (sample CSV included in data/)
+**7. Import movie data (sample CSV included in `data/`)**
+
+```bash
 python -m app.utils.import_csv --csv data/TMDB_movie_dataset_v11.csv --db sqlite:///./movies.db
+```
 
-# 6. Start the API server
+**8. Start the API server**
+
+```bash
 uvicorn app.main:app --reload
 ```
 
@@ -53,21 +79,41 @@ Then open `http://127.0.0.1:8000/docs` in your browser.
 
 ## Setup (Windows / PC)
 
-Using PowerShell or Command Prompt, copy and paste:
+Each step below is **individually copy‑and‑pasteable** in PowerShell or Command Prompt.
+
+**1. Clone the repository**
 
 ```powershell
-# 1. Clone and enter the repository
 git clone https://github.com/danielifergan12/Movie_API.git
+```
+
+**2. Enter the project folder**
+
+```powershell
 cd Movie_API
+```
 
-# 2. Create and activate virtual environment
+**3. Create a virtual environment**
+
+```powershell
 py -m venv .venv
+```
+
+**4. Activate the virtual environment**
+
+```powershell
 .\.venv\Scripts\activate
+```
 
-# 3. Install dependencies
+**5. Install dependencies**
+
+```powershell
 pip install -r requirements.txt
+```
 
-# 4. Create database tables
+**6. Create the database tables**
+
+```powershell
 py - << 'PY'
 from app.database import Base, engine
 from app.models import movie  # register Movie model
@@ -75,11 +121,17 @@ from app.models import movie_list  # register MovieList models
 Base.metadata.create_all(bind=engine)
 print("✓ Database tables created successfully")
 PY
+```
 
-# 5. Import movie data (sample CSV included in data\)
+**7. Import movie data (sample CSV included in `data\`)**
+
+```powershell
 py -m app.utils.import_csv --csv data\TMDB_movie_dataset_v11.csv --db sqlite:///./movies.db
+```
 
-# 6. Start the API server
+**8. Start the API server**
+
+```powershell
 uvicorn app.main:app --reload
 ```
 
