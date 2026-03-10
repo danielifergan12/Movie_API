@@ -75,6 +75,10 @@ uvicorn app.main:app --reload
 
 Then open `http://127.0.0.1:8000/docs` in your browser.
 
+For write operations (creating movies or managing lists), you will need the API key:
+
+- **Header**: `X-API-Key: dev-secret-key`
+
 ---
 
 ## Setup (Windows / PC)
@@ -136,6 +140,10 @@ uvicorn app.main:app --reload
 ```
 
 Then open `http://127.0.0.1:8000/docs` in your browser.
+
+For write operations (creating movies or managing lists), you will need the API key:
+
+- **Header**: `X-API-Key: dev-secret-key`
 
 **Notes:**
 - The included CSV (`data/TMDB_movie_dataset_v11.csv`) is a sample dataset (~5000 movies).

@@ -38,6 +38,8 @@ app = FastAPI(
     3. Use **GET /movies** or **GET /movies/by-genre/{genre}** to explore the movie catalogue
     4. Use **GET /analytics/genres** to see per‑genre statistics
     
+    For write operations, include the API key header (see `README.md`): `X-API-Key: dev-secret-key`.
+    
     All endpoints return JSON responses with clear error messages and are fully documented below.
     """,
     contact={
