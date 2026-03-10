@@ -125,6 +125,17 @@ class MovieRead(MovieBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class GenreStats(BaseModel):
+    """Analytics summary for a single genre."""
+
+    genre: str
+    movie_count: int
+    avg_vote_average: float | None = None
+    avg_runtime: float | None = None
+    avg_popularity: float | None = None
+    top_movies: List[MovieRead]
+
+
 class MovieListResponse(BaseModel):
     items: List[MovieRead]
     total: int

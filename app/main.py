@@ -7,6 +7,7 @@ from .models import movie  # noqa: F401 - ensure models are imported for metadat
 from .models import movie_list  # noqa: F401 - ensure lists models are imported
 from .routes import movies as movies_router
 from .routes import lists as lists_router
+from .routes import analytics as analytics_router
 from sqlalchemy import text
 
 
@@ -65,6 +66,15 @@ app = FastAPI(
             to make CRUD operations clear during your COMP3011 demo.
             """,
         },
+        {
+            "name": "analytics",
+            "description": """
+            Data-driven analytics endpoints that summarise the movie catalogue.
+
+            Currently includes per-genre statistics (average rating, runtime, popularity,
+            and top example movies for each genre).
+            """,
+        },
     ],
 )
 
@@ -96,4 +106,5 @@ def read_root() -> dict[str, str | int]:
 
 app.include_router(movies_router.router)
 app.include_router(lists_router.router)
+app.include_router(analytics_router.router)
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..core.config import MAX_LIMIT
 from ..models.movie import Movie
-from ..schemas.movie import MovieCreate, MovieUpdate, SimilarMovie
+from ..schemas.movie import GenreStats, MovieCreate, MovieUpdate, SimilarMovie
 
 
 def get_movies_by_title(
@@ -209,4 +209,112 @@ def get_similar_movies(
         )
     )
     return items[:limit]
+
+
+def get_genre_analytics(
+    db: Session,
+    *,
+    top_n: int = 3,
+) -> List[GenreStats]:
+    """
+    Compute per-genre analytics: movie count and average rating/runtime/popularity,
+    plus a few top example movies per genre.
+    """
+    # Load all movies that have at least one genre
+    movies = (
+        db.execute(select(Movie).where(Movie.genres.is_not(None)))
+        .scalars()
+        .all()
+    )
+
+    stats: Dict[str, Dict[str, object]] = {}
+
+    for m in movies:
+        if not m.genres:
+            continue
+        tokens = [t.strip() for t in m.genres.split(",") if t.strip()]
+        for g in tokens:
+            entry = stats.setdefault(
+                g,
+                {
+                    "count": 0,
+                    "vote_sum": 0.0,
+                    "vote_count": 0,
+                    "runtime_sum": 0.0,
+                    "runtime_count": 0,
+                    "popularity_sum": 0.0,
+                    "popularity_count": 0,
+                    "examples": [],
+                },
+            )
+            entry["count"] = int(entry["count"]) + 1
+
+            if m.vote_average is not None:
+                entry["vote_sum"] = float(entry["vote_sum"]) + float(m.vote_average)
+                entry["vote_count"] = int(entry["vote_count"]) + 1
+
+            if m.runtime is not None:
+                entry["runtime_sum"] = float(entry["runtime_sum"]) + float(m.runtime)
+                entry["runtime_count"] = int(entry["runtime_count"]) + 1
+
+            if m.popularity is not None:
+                entry["popularity_sum"] = float(entry["popularity_sum"]) + float(
+                    m.popularity
+                )
+                entry["popularity_count"] = int(entry["popularity_count"]) + 1
+
+            examples: List[Movie] = entry["examples"]  # type: ignore[assignment]
+            examples.append(m)
+
+    results: List[GenreStats] = []
+    for genre, e in stats.items():
+        count = int(e["count"])
+        vote_count = int(e["vote_count"])
+        runtime_count = int(e["runtime_count"])
+        popularity_count = int(e["popularity_count"])
+
+        avg_vote = (
+            float(e["vote_sum"]) / vote_count if vote_count > 0 else None
+        )
+        avg_runtime = (
+            float(e["runtime_sum"]) / runtime_count if runtime_count > 0 else None
+        )
+        avg_popularity = (
+            float(e["popularity_sum"]) / popularity_count
+            if popularity_count > 0
+            else None
+        )
+
+        examples: List[Movie] = e["examples"]  # type: ignore[assignment]
+        # Sort examples by rating (highest first), then popularity, then title
+        examples_sorted = sorted(
+            examples,
+            key=lambda m: (
+                -(m.vote_average or 0.0),
+                -(m.popularity or 0.0),
+                m.title.lower(),
+            ),
+        )
+        top_movies = examples_sorted[:top_n]
+
+        results.append(
+            GenreStats(
+                genre=genre,
+                movie_count=count,
+                avg_vote_average=avg_vote,
+                avg_runtime=avg_runtime,
+                avg_popularity=avg_popularity,
+                top_movies=top_movies,
+            )
+        )
+
+    # Sort genres by average rating (highest first), then by movie_count
+    results.sort(
+        key=lambda s: (
+            -(s.avg_vote_average or 0.0),
+            -s.movie_count,
+            s.genre.lower(),
+        )
+    )
+    return results
 
