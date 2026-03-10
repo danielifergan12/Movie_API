@@ -179,6 +179,35 @@ INFO:     Application startup complete.
 
 ---
 
+## Authentication (API Key)
+
+This API uses a **simple API key** for write operations (creating movies and managing curated lists).
+
+- **Header name**: `X-API-Key`
+- **Default value for this coursework**: `dev-secret-key`
+
+By default, the key is configured in `app/core/config.py` and can be overridden with the `MOVIES_API_KEY` environment variable.
+
+You must include this header for:
+
+- `POST /movies`
+- `POST /lists`
+- `PUT /lists/{name}`
+- `DELETE /lists/{name}`
+
+Read‑only endpoints (all `GET` endpoints, including `/`, `/movies/...`, `/lists`, `/lists/{name}`, `/analytics/genres`) **do not** require an API key.
+
+**Example (with API key):**
+
+```bash
+curl -X POST "http://127.0.0.1:8000/movies" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: dev-secret-key" \
+  -d '{"title": "Test Movie", "status": "released", "vote_average": 7.5}'
+```
+
+---
+
 ## API Documentation (for Submission)
 
 In addition to the auto-generated Swagger UI, this project includes a **formal API documentation file**:

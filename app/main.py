@@ -18,24 +18,27 @@ app = FastAPI(
     title=APP_NAME,
     version="1.0.0",
     description="""
-    🎬 **Movies API** - A RESTful API for exploring movie data from TMDB.
+    🎬 **Movies API** – COMP3011 coursework web service for exploring and curating movies.
 
     ## Features
     
-    * 🔍 **Search by Title** - Find movies by exact or partial title match
-    * 🎭 **Filter by Genre** - Browse movies by genre (Action, Drama, Comedy, etc.)
-    * ⭐ **Filter by Rating** - Find highly-rated movies (sorted by rating)
-    * 🎯 **Similar Movies** - Discover movies similar to your favorites (sorted by rating)
-    * 📄 **Pagination** - Navigate through large result sets with `skip` and `limit`
+    * 📃 **Curated Lists (CRUD)** – Build named movie playlists (Create, Read, Update, Delete) from existing movies
+    * 🔍 **Search by Title** – Find movies by exact or partial title match
+    * 🎭 **Filter by Genre** – Browse movies by genre using a dropdown in the docs
+    * ⭐ **Filter by Rating** – Find highly‑rated movies (sorted by rating, highest first)
+    * 🎯 **Similar Movies** – Discover movies similar to your favourites (based on genres and keywords)
+    * 📊 **Genre Analytics** – Per‑genre statistics with average rating, runtime, popularity, and top example movies
+    * 📄 **Pagination** – Navigate large result sets with `skip` and `limit`
+    * 🔐 **Simple API Key** – Write operations (creating movies and lists) require an `X-API-Key` header
     
     ## Quick Start
     
-    1. Try **GET /movies** to see all movies with filters
-    2. Use **GET /movies/by-title/{title}** to search by title
-    3. Use **GET /movies/by-genre/{genre}** to filter by genre
-    4. Use **GET /movies/by-rating** to find highly-rated movies
+    1. Use **POST /lists** to create a curated list (requires header `X-API-Key: dev-secret-key`)
+    2. Use **GET /lists** and **GET /lists/{name}** to browse curated lists
+    3. Use **GET /movies** or **GET /movies/by-genre/{genre}** to explore the movie catalogue
+    4. Use **GET /analytics/genres** to see per‑genre statistics
     
-    All endpoints return JSON responses with clear error messages.
+    All endpoints return JSON responses with clear error messages and are fully documented below.
     """,
     contact={
         "name": "Movies API",
@@ -46,24 +49,20 @@ app = FastAPI(
     },
     tags_metadata=[
         {
-            "name": "health",
-            "description": "Health check and API status endpoints.",
-        },
-        {
-            "name": "movies",
-            "description": """
-            Movie operations. Search, filter, and discover movies.
-
-            **No movie IDs required** - all endpoints use title, genre, or rating.
-            """,
-        },
-        {
             "name": "lists",
             "description": """
             Curated movie lists (playlists) built from existing movies.
 
             Endpoints are explicitly labelled as **CREATE**, **READ**, **UPDATE**, and **DELETE**
             to make CRUD operations clear during your COMP3011 demo.
+            """,
+        },
+        {
+            "name": "movies",
+            "description": """
+            Movie operations. Search, filter, and discover movies.
+
+            **No movie IDs required** – all endpoints use title, genre, or rating.
             """,
         },
         {
@@ -74,6 +73,10 @@ app = FastAPI(
             Currently includes per-genre statistics (average rating, runtime, popularity,
             and top example movies for each genre).
             """,
+        },
+        {
+            "name": "health",
+            "description": "Health check and API status endpoints.",
         },
     ],
 )
