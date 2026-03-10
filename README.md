@@ -179,6 +179,23 @@ INFO:     Application startup complete.
 
 ---
 
+## API Documentation (for Submission)
+
+In addition to the auto-generated Swagger UI, this project includes a **formal API documentation file**:
+
+- Markdown source: `docs/api_documentation.md`
+
+For coursework submission, you should export this markdown file to **PDF** and include it alongside your code.
+
+**To export to PDF (example workflow):**
+
+1. Open `docs/api_documentation.md` in your editor (e.g. VS Code) or a markdown viewer.
+2. Use “Print” → “Save as PDF” (or a similar “Export to PDF” option).
+3. Save the file as something like `Movies_API_Documentation.pdf` inside the `docs/` folder.
+4. Reference this PDF in your submission as the API documentation described in the brief.
+
+---
+
 ## Testing the API
 
 ### Quick Test via Browser

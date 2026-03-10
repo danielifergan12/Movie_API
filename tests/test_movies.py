@@ -35,6 +35,8 @@ Base.metadata.create_all(bind=engine)
 
 client = TestClient(app)
 
+API_KEY_HEADERS = {"X-API-Key": "dev-secret-key"}
+
 
 def test_create_movie() -> None:
     payload = {
@@ -42,7 +44,7 @@ def test_create_movie() -> None:
         "status": "released",
         "vote_average": 8.7,
     }
-    response = client.post("/movies", json=payload)
+    response = client.post("/movies", json=payload, headers=API_KEY_HEADERS)
     assert response.status_code == 201
     data = response.json()
     assert data["title"] == "Inception"
@@ -56,7 +58,7 @@ def test_get_movies_by_title() -> None:
         "title": "The Matrix",
         "status": "released",
     }
-    client.post("/movies", json=payload)
+    client.post("/movies", json=payload, headers=API_KEY_HEADERS)
 
     # Test partial match
     resp = client.get("/movies/by-title/Matrix")
@@ -87,6 +89,7 @@ def test_get_movies_by_genre() -> None:
             "status": "released",
             "genres": "Action, Thriller",
         },
+        headers=API_KEY_HEADERS,
     )
     client.post(
         "/movies",
@@ -95,6 +98,7 @@ def test_get_movies_by_genre() -> None:
             "status": "released",
             "genres": "Drama, Romance",
         },
+        headers=API_KEY_HEADERS,
     )
 
     resp = client.get("/movies/by-genre/Action")
@@ -115,6 +119,7 @@ def test_get_movies_by_rating() -> None:
             "status": "released",
             "vote_average": 9.0,
         },
+        headers=API_KEY_HEADERS,
     )
     client.post(
         "/movies",
@@ -123,6 +128,7 @@ def test_get_movies_by_rating() -> None:
             "status": "released",
             "vote_average": 7.0,
         },
+        headers=API_KEY_HEADERS,
     )
     client.post(
         "/movies",
@@ -131,6 +137,7 @@ def test_get_movies_by_rating() -> None:
             "status": "released",
             "vote_average": 5.0,
         },
+        headers=API_KEY_HEADERS,
     )
 
     # Test min rating
@@ -166,6 +173,7 @@ def test_list_movies_pagination() -> None:
                 "vote_average": 7.0 + i,
                 "genres": f"Genre{i}, Action",
             },
+            headers=API_KEY_HEADERS,
         )
 
     resp = client.get("/movies", params={"skip": 0, "limit": 2})

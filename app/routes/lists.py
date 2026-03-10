@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.orm import Session
 
-from ..api.deps import get_db
+from ..api.deps import get_db, verify_api_key
 from .. import crud
 from ..schemas.movie_list import (
     MovieListCreate,
@@ -30,6 +30,7 @@ router = APIRouter(
         "an optional description, and a list of movie titles. Titles are matched "
         "against existing movies in the database."
     ),
+    dependencies=[Depends(verify_api_key)],
 )
 def create_movie_list(
     payload: MovieListCreate,
@@ -111,6 +112,7 @@ def get_movie_list(
         "UPDATE an existing curated movie list. You can change the description and/or "
         "replace the list of movies by providing a new set of movie titles."
     ),
+    dependencies=[Depends(verify_api_key)],
 )
 def update_movie_list(
     name: str = Path(..., description="Unique name of the curated movie list to update."),
@@ -144,6 +146,7 @@ def update_movie_list(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="DELETE: curated movie list",
     description="DELETE a curated movie list by its unique **name** (and all its items).",
+    dependencies=[Depends(verify_api_key)],
 )
 def delete_movie_list(
     name: str = Path(..., description="Unique name of the curated movie list to delete."),

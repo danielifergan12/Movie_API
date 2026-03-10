@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from ..api.deps import get_db
+from ..api.deps import get_db, verify_api_key
 from ..core.config import DEFAULT_LIMIT
 from ..crud import movie as crud_movie
 from ..models.movie import Movie
@@ -27,6 +27,7 @@ router = APIRouter(prefix="/movies", tags=["movies"])
     summary="Create a new movie",
     description="Add a new movie to the database. Only `title` is required; all other fields are optional.",
     response_description="The created movie object with assigned ID.",
+    dependencies=[Depends(verify_api_key)],
 )
 def create_movie_endpoint(
     movie_in: MovieCreate,

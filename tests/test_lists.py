@@ -34,18 +34,28 @@ Base.metadata.create_all(bind=engine)
 
 client = TestClient(app)
 
+API_KEY_HEADERS = {"X-API-Key": "dev-secret-key"}
+
 
 def test_create_and_read_movie_list() -> None:
     # First create a couple of movies to reference by title
-    client.post("/movies", json={"title": "Inception", "status": "released"})
-    client.post("/movies", json={"title": "Interstellar", "status": "released"})
+    client.post(
+        "/movies",
+        json={"title": "Inception", "status": "released"},
+        headers=API_KEY_HEADERS,
+    )
+    client.post(
+        "/movies",
+        json={"title": "Interstellar", "status": "released"},
+        headers=API_KEY_HEADERS,
+    )
 
     payload = {
         "name": "Nolan Favourites",
         "description": "Christopher Nolan sci-fi hits",
         "movie_titles": ["Inception", "Interstellar"],
     }
-    resp = client.post("/lists", json=payload)
+    resp = client.post("/lists", json=payload, headers=API_KEY_HEADERS)
     assert resp.status_code == 201
     data = resp.json()
     assert data["name"] == "Nolan Favourites"
@@ -67,9 +77,21 @@ def test_create_and_read_movie_list() -> None:
 
 
 def test_update_and_delete_movie_list() -> None:
-    client.post("/movies", json={"title": "Movie A", "status": "released"})
-    client.post("/movies", json={"title": "Movie B", "status": "released"})
-    client.post("/movies", json={"title": "Movie C", "status": "released"})
+    client.post(
+        "/movies",
+        json={"title": "Movie A", "status": "released"},
+        headers=API_KEY_HEADERS,
+    )
+    client.post(
+        "/movies",
+        json={"title": "Movie B", "status": "released"},
+        headers=API_KEY_HEADERS,
+    )
+    client.post(
+        "/movies",
+        json={"title": "Movie C", "status": "released"},
+        headers=API_KEY_HEADERS,
+    )
 
     client.post(
         "/lists",
@@ -78,6 +100,7 @@ def test_update_and_delete_movie_list() -> None:
             "description": "Original description",
             "movie_titles": ["Movie A", "Movie B"],
         },
+        headers=API_KEY_HEADERS,
     )
 
     # UPDATE: change description and movies
@@ -87,6 +110,7 @@ def test_update_and_delete_movie_list() -> None:
             "description": "Updated description",
             "movie_titles": ["Movie C"],
         },
+        headers=API_KEY_HEADERS,
     )
     assert resp_update.status_code == 200
     update_data = resp_update.json()
@@ -95,7 +119,7 @@ def test_update_and_delete_movie_list() -> None:
     assert update_data["movies"][0]["title"] == "Movie C"
 
     # DELETE
-    resp_delete = client.delete("/lists/My List")
+    resp_delete = client.delete("/lists/My List", headers=API_KEY_HEADERS)
     assert resp_delete.status_code == 204
 
     # Ensure it is gone
