@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from ..api.deps import get_db
 from ..crud import movie as crud_movie
-from ..schemas.movie import GenreStats
+from ..schemas.movie import GenreFilter, GenreStats
 
 router = APIRouter(
     prefix="/analytics",
@@ -26,6 +26,11 @@ router = APIRouter(
     response_description="List of genres with aggregated statistics and top example movies.",
 )
 def get_genre_analytics_endpoint(
+    genre: Optional[GenreFilter] = Query(
+        None,
+        description="**Genre Filter** - Optional. Select a single genre from the dropdown.",
+        example=GenreFilter.ACTION,
+    ),
     top_n: int = Query(
         3,
         ge=1,
@@ -41,6 +46,10 @@ def get_genre_analytics_endpoint(
     **Examples:**
     - `/analytics/genres` – default 3 top movies per genre
     - `/analytics/genres?top_n=5` – show 5 top movies per genre
+    - `/analytics/genres?genre=Action&top_n=5` – analytics for Action only
     """
-    return crud_movie.get_genre_analytics(db, top_n=top_n)
+    results = crud_movie.get_genre_analytics(db, top_n=top_n)
+    if genre is not None:
+        return [g for g in results if g.genre == genre.value]
+    return results
 
